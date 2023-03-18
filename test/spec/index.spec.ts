@@ -1,7 +1,7 @@
 import 'jasmine';
 import * as index from '../../src';
 
-describe('{{project-name}}', () => {
+describe('ts-commands', () => {
 	it('exports a', () => {
 		expect(index.a).toBeTrue();
 	});

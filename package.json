@@ -42,13 +42,16 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/ts-commands/ts-commands.git"
+		"url": "git+https://github.com/StatelessStudio/ts-commands.git"
 	},
-	"author": "ts-commands",
+	"author": "StatelessStudio",
 	"license": "MIT",
 	"bugs": {
-		"url": "https://github.com/ts-commands/ts-commands/issues"
+		"url": "https://github.com/StatelessStudio/ts-commands/issues"
 	},
-	"homepage": "https://github.com/ts-commands/ts-commands#readme",
-	"keywords": []
+	"homepage": "https://github.com/StatelessStudio/ts-commands#readme",
+	"keywords": [],
+	"dependencies": {
+		"yargs": "^17.7.1"
+	}
 }

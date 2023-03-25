@@ -1,4 +1,5 @@
 import { CommandOptions } from './command-options';
+import { RegisterCommandsOptions } from './register-commands-options';
 
 export class Command {
 	public signature: string;
@@ -7,7 +8,13 @@ export class Command {
 	public positional: CommandOptions[];
 	public options: CommandOptions[];
 
-	public async handle(args): Promise<void> {}
+	public registerCommandsOptions: RegisterCommandsOptions;
+
+	public constructor(options: RegisterCommandsOptions) {
+		this.registerCommandsOptions = options;
+	}
+
+	public async handle(args): Promise<void | number> {}
 
 	public register(yargs) {
 		yargs.command(
@@ -28,7 +35,16 @@ export class Command {
 
 				return _y;
 			},
-			this.handle.bind(this)
+			async (...args) => {
+				const returned = await this.handle.bind(this)(...args);
+				await this.teardown.bind(this)(returned ?? 0);
+			}
 		);
+	}
+
+	public teardown(exitCode: number) {
+		if (this.registerCommandsOptions.forceExit) {
+			process.exit(exitCode);
+		}
 	}
 }

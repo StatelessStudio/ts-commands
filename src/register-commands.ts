@@ -1,12 +1,7 @@
 import Yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
-import { Command } from './command';
-
-interface RegisterCommandsOptions {
-	commands: (typeof Command)[];
-	name?: string;
-}
+import { RegisterCommandsOptions } from './register-commands-options';
 
 export function registerCommands(options: RegisterCommandsOptions) {
 	const yargs = Yargs(hideBin(process.argv));
@@ -16,7 +11,7 @@ export function registerCommands(options: RegisterCommandsOptions) {
 	}
 
 	for (const command of options.commands) {
-		new command().register(yargs);
+		new command(options).register(yargs);
 	}
 
 	yargs.parse();

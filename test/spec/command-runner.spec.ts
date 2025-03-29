@@ -49,7 +49,7 @@ describe('CommandRunner', () => {
 			}
 		}
 
-		await new CommandRunner(new MockCommandWithError()).run([]);
+		await new CommandRunner(new MockCommandWithError()).invoke([]);
 
 		mockConsole.expectStderrContains('Error: Test error\n');
 		mockExit.expectExit(1);
@@ -61,7 +61,7 @@ describe('CommandRunner', () => {
 			Promise.resolve(42)
 		);
 
-		await commandRunner.run(args);
+		await commandRunner.invoke(args);
 
 		expect(handleSpy).toHaveBeenCalledWith({});
 		mockExit.expectExit(42);
@@ -73,7 +73,7 @@ describe('CommandRunner', () => {
 			Promise.resolve()
 		);
 
-		await commandRunner.run(args);
+		await commandRunner.invoke(args);
 
 		expect(handleSpy).toHaveBeenCalledWith({});
 		mockExit.expectExit(0);
@@ -83,10 +83,25 @@ describe('CommandRunner', () => {
 		const args = ['--invalid-arg'];
 		const showHelpSpy = spyOn(command, 'help');
 
-		await commandRunner.run(args);
+		await commandRunner.invoke(args);
 
 		expect(showHelpSpy).toHaveBeenCalled();
 		mockConsole.expectStderr('Error: Invalid option key: --invalid-arg\n');
 		mockExit.expectExit(1);
+	});
+
+	it('can run standalone for single-command apps', async () => {
+		const handleSpy = spyOn(command, 'handle').and.returnValue(
+			Promise.resolve(0)
+		);
+
+		spyOn(commandRunner, 'parseArgs').and.returnValue({});
+		await commandRunner.run();
+
+		// Wait for promise
+		await new Promise((resolve) => setTimeout(resolve, 1));
+
+		expect(handleSpy).toHaveBeenCalled();
+		mockExit.expectExit(0);
 	});
 });

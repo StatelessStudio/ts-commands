@@ -8,7 +8,11 @@ import { Command } from './command';
 export class CommandRunner {
 	constructor(public command: Command) {}
 
-	public async run(args: string[]): Promise<void | number> {
+	public run(): void {
+		this.invoke(process.argv.slice(2)).catch(console.error);
+	}
+
+	public async invoke(args: string[]): Promise<void | number> {
 		let parsedArgs: ParsedArguments;
 		let result: number;
 
@@ -31,7 +35,7 @@ export class CommandRunner {
 		process.exit(result ?? 0);
 	}
 
-	protected parseArgs(args: string[]): ParsedArguments {
+	public parseArgs(args: string[]): ParsedArguments {
 		return new ArgumentParser(this.command).parse(args);
 	}
 

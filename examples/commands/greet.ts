@@ -6,7 +6,7 @@ interface Args extends ParsedArguments {
 	informal?: boolean;
 }
 
-export class GreetCommmand extends Command {
+export class GreetCommand extends Command {
 	override key = 'greet';
 	override description = 'say hello';
 

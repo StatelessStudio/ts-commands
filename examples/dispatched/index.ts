@@ -1,7 +1,7 @@
 import { CommandDispatcher } from '../../src/command-dispatcher';
-import { FarewellCommmand } from '../commands/farewell';
-import { GreetCommmand } from '../commands/greet';
+import { FarewellCommand } from '../commands/farewell';
+import { GreetCommand } from '../commands/greet';
 
 new CommandDispatcher({
-	commands: [FarewellCommmand, GreetCommmand],
+	commands: [FarewellCommand, GreetCommand],
 }).run();

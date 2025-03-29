@@ -1,4 +1,4 @@
 import { CommandRunner } from '../../src/command-runner';
-import { GreetCommmand } from '../commands/greet';
+import { GreetCommand } from '../commands/greet';
 
-new CommandRunner(new GreetCommmand()).run();
+new CommandRunner(new GreetCommand()).run();

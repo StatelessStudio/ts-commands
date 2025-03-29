@@ -58,6 +58,22 @@ export class GreetCommmand extends Command {
 
 ### Registering Commands
 
+#### Option 1 - Singular Command
+
+If your app only needs one command (e.g. it only does one thing), you can use a singular style CLI:
+
+`src/bin/index.ts`
+```typescript
+import { CommandRunner } from '../../src/command-runner';
+import { GreetCommmand } from '../commands/greet';
+
+new CommandRunner(new GreetCommmand()).run();
+```
+
+#### Option 2 - Dispatched Commands
+
+Dispatched commands are useful for when you have multiple sub-commands in your CLI, such as `migration:run`, `migration:generate`, etc.
+
 Create an index file to register your command(s):
 
 `src/bin/index.ts`

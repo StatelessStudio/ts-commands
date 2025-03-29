@@ -1,4 +1,4 @@
-import { Command, OptionType, ParsedArguments } from '../src';
+import { Command, OptionType, ParsedArguments } from '../../src';
 
 interface Args extends ParsedArguments {
 	fname: string;

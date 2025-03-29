@@ -41,7 +41,7 @@ export class CommandDispatcher {
 		}
 
 		const runner = new CommandRunner(command);
-		await runner.run(process.argv.slice(3));
+		await runner.invoke(process.argv.slice(3));
 	}
 
 	public help() {

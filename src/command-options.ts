@@ -1,14 +1,16 @@
+import { ArgumentValue } from './argument-parser';
+
 export enum OptionType {
 	boolean,
 	number,
 	string,
 }
 
-export interface CommandOptions {
+export interface CommandOption {
 	key: string;
-	type: OptionType;
+	type?: OptionType;
 	alias?: string;
 	description?: string;
-	default?: any;
+	default?: ArgumentValue;
 	choices?: number[] | string[];
 }

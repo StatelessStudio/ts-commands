@@ -11,7 +11,7 @@ Create a command file:
 
 `src/bin/greet-command.ts`
 ```typescript
-import { Command, OptionType, ParsedArguments } from '../src';
+import { Command, OptionType, ParsedArguments } from 'ts-commands';
 
 interface Args extends ParsedArguments {
 	fname: string;
@@ -19,7 +19,7 @@ interface Args extends ParsedArguments {
 	informal?: boolean;
 }
 
-export class GreetCommmand extends Command {
+export class GreetCommand extends Command {
 	override key = 'greet';
 	override description = 'say hello';
 
@@ -50,7 +50,6 @@ export class GreetCommmand extends Command {
 	override async handle(args: Args) {
 		const greeting = args.informal ? 'yo' : 'hello';
 
-		/* eslint-disable-next-line no-console */
 		console.log(`${greeting} ${args.fname} ${args.lname}`);
 	}
 }
@@ -64,10 +63,10 @@ If your app only needs one command (e.g. it only does one thing), you can use a 
 
 `src/bin/index.ts`
 ```typescript
-import { CommandRunner } from '../../src/command-runner';
-import { GreetCommmand } from '../commands/greet';
+import { CommandRunner } from 'ts-commands';
+import { GreetCommand } from '../commands/greet';
 
-new CommandRunner(new GreetCommmand()).run();
+new CommandRunner(new GreetCommand()).run();
 ```
 
 #### Option 2 - Dispatched Commands
@@ -78,14 +77,13 @@ Create an index file to register your command(s):
 
 `src/bin/index.ts`
 ```typescript
-import { CommandDispatcher } from '../src/command-dispatcher';
-import { FarewellCommmand } from './farewell';
-import { GreetCommmand } from './greet';
+import { CommandDispatcher } from 'ts-commands';
+import { FarewellCommand } from './farewell';
+import { GreetCommand } from './greet';
 
 new CommandDispatcher({
-	commands: [FarewellCommmand, GreetCommmand],
+	commands: [FarewellCommand, GreetCommand],
 }).run();
-
 ```
 
 #### Option 3 - Automatically Register all Commands in a Folder
@@ -102,9 +100,8 @@ import { tsimportDirectory } from 'ts-import-ts';
 import { Command, CommandDispatcher } from 'ts-commands';
 
 new CommandDispatcher({
-	commands: tsimportDirectory<typeof Command>('scripts');
+	commands: tsimportDirectory<typeof Command>('scripts'),
 }).run();
-
 ```
 
 ## Create Additional Commands

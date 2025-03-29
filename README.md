@@ -4,24 +4,26 @@
 
 1. `npm i ts-commands`
 
-## Creating Commands
+## Usage
+
+### Creating Commands
 Create a command file:
 
 `src/bin/greet-command.ts`
 ```typescript
-import { Command, OptionType } from '../src';
+import { Command, OptionType, ParsedArguments } from '../src';
 
-interface Args {
+interface Args extends ParsedArguments {
 	fname: string;
 	lname: string;
 	informal?: boolean;
 }
 
 export class GreetCommmand extends Command {
-	signature = 'greet [fname] [lname]';
-	description = 'say hello';
+	override key = 'greet';
+	override description = 'say hello';
 
-	positional = [
+	override positional = [
 		{
 			key: 'fname',
 			type: OptionType.string,
@@ -36,7 +38,7 @@ export class GreetCommmand extends Command {
 		},
 	];
 
-	options = [
+	override options = [
 		{
 			key: 'informal',
 			type: OptionType.boolean,
@@ -45,29 +47,31 @@ export class GreetCommmand extends Command {
 		},
 	];
 
-	async handle(args: Args) {
+	override async handle(args: Args) {
 		const greeting = args.informal ? 'yo' : 'hello';
 
+		/* eslint-disable-next-line no-console */
 		console.log(`${greeting} ${args.fname} ${args.lname}`);
 	}
 }
 ```
 
-## Register Commands
+### Registering Commands
 
 Create an index file to register your command(s):
 
 `src/bin/index.ts`
 ```typescript
-import { registerCommands } from 'ts-commands';
-import { GreetCommmand } from './greet-command';
+import { CommandDispatcher } from '../src/command-dispatcher';
+import { FarewellCommmand } from './farewell';
+import { GreetCommmand } from './greet';
 
-registerCommands({
-	name: 'examples',
-	commands: [GreetCommmand],
-});
+new CommandDispatcher({
+	commands: [FarewellCommmand, GreetCommmand],
+}).run();
+
 ```
 
 ## Create Additional Commands
    1. Repeat "Creating Commands" section for each command
-   2. Add each command in the `commands` array of `registerCommands`
+   2. Add each command in the `commands` of `CommandDispatcher`

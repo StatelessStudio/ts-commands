@@ -1,16 +1,16 @@
-import { Command, OptionType } from '../src';
+import { Command, OptionType, ParsedArguments } from '../src';
 
-interface Args {
+interface Args extends ParsedArguments {
 	fname: string;
 	lname: string;
 	informal?: boolean;
 }
 
 export class GreetCommmand extends Command {
-	signature = 'greet [fname] [lname]';
-	description = 'say hello';
+	override key = 'greet';
+	override description = 'say hello';
 
-	positional = [
+	override positional = [
 		{
 			key: 'fname',
 			type: OptionType.string,
@@ -25,7 +25,7 @@ export class GreetCommmand extends Command {
 		},
 	];
 
-	options = [
+	override options = [
 		{
 			key: 'informal',
 			type: OptionType.boolean,
@@ -34,7 +34,7 @@ export class GreetCommmand extends Command {
 		},
 	];
 
-	async handle(args: Args) {
+	override async handle(args: Args) {
 		const greeting = args.informal ? 'yo' : 'hello';
 
 		/* eslint-disable-next-line no-console */

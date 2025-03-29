@@ -88,6 +88,25 @@ new CommandDispatcher({
 
 ```
 
+#### Option 3 - Automatically Register all Commands in a Folder
+
+Use [ts-import-ts](https://www.npmjs.com/package/ts-import-ts) to load all Commands in a directory. Note, you will need to change each Command to the default export of the module, e.g. `export default class MyCommand...`. Please read the readme of that package for proper usage.
+
+First, install with `npm i ts-import-ts`
+
+Create your dispatcher:
+
+`src/bin/index.ts`
+```typescript
+import { tsimportDirectory } from 'ts-import-ts';
+import { Command, CommandDispatcher } from 'ts-commands';
+
+new CommandDispatcher({
+	commands: tsimportDirectory<typeof Command>('scripts');
+}).run();
+
+```
+
 ## Create Additional Commands
    1. Repeat "Creating Commands" section for each command
    2. Add each command in the `commands` of `CommandDispatcher`

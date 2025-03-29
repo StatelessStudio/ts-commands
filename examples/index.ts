@@ -1,8 +1,7 @@
-import { registerCommands } from '../src';
+import { CommandDispatcher } from '../src/command-dispatcher';
 import { FarewellCommmand } from './farewell';
 import { GreetCommmand } from './greet';
 
-registerCommands({
-	name: 'examples',
+new CommandDispatcher({
 	commands: [FarewellCommmand, GreetCommmand],
-});
+}).run();

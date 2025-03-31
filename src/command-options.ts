@@ -14,3 +14,8 @@ export interface CommandOption {
 	default?: ArgumentValue;
 	choices?: number[] | string[];
 }
+
+export const defaultCommandOptions: Partial<CommandOption> = {
+	type: OptionType.string,
+	description: '',
+};

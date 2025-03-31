@@ -64,6 +64,15 @@ export class ArgumentParser {
 			}
 		}
 
+		for (const option of this.command.options) {
+			if (
+				matches[option.key] === undefined &&
+				option.default !== undefined
+			) {
+				matches[option.key] = option.default;
+			}
+		}
+
 		if (this.positionalIndex < requiredPositionals.length) {
 			throw new ArgumentError(
 				`Missing positional arguments: ${requiredPositionals

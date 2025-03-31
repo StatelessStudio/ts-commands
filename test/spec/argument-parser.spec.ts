@@ -105,6 +105,40 @@ describe('ArgumentParser', () => {
 		});
 	});
 
+	it('populates default values for positionals', () => {
+		command.positional = [
+			{
+				key: 'input',
+				type: OptionType.string,
+				default: 'defaultInput.txt',
+			},
+		];
+		command.options = [];
+		command.init();
+
+		const result = parser.parse([]);
+		expect(result).toEqual({
+			input: 'defaultInput.txt',
+		});
+	});
+
+	it('populates default values for optionals', () => {
+		command.positional = [];
+		command.options = [
+			{
+				key: 'defaultOption',
+				type: OptionType.string,
+				default: 'defaultValue',
+			},
+		];
+		command.init();
+
+		const result = parser.parse([]);
+		expect(result).toEqual({
+			defaultOption: 'defaultValue',
+		});
+	});
+
 	it('throws an error for missing value for string option', () => {
 		const args = ['--output'];
 		expect(() => parser.parse(args)).toThrowError(

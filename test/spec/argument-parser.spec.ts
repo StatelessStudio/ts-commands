@@ -196,4 +196,20 @@ describe('ArgumentParser', () => {
 			'Invalid positional argument: extra.txt'
 		);
 	});
+
+	it('throws an error for invalid choice', () => {
+		command.positional = [];
+		command.options.push({
+			key: 'color',
+			type: OptionType.string,
+			choices: ['red', 'green', 'blue'],
+		});
+		command.init();
+
+		const args = ['--color=yellow'];
+		expect(() => parser.parse(args)).toThrowError(
+			'Invalid choice for argument: color (yellow).' +
+				' Allowed choices are [red, green, blue]'
+		);
+	});
 });

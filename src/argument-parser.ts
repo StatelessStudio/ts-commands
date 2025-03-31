@@ -194,7 +194,8 @@ export class ArgumentParser {
 			const choices = option.choices.join(', ');
 
 			throw new ArgumentError(
-				`Invalid choice for argument: ${option.key} (${value}). Allowed choices are [${choices}]`
+				`Invalid choice for argument: ${option.key} (${value}). ` +
+					`Allowed choices are [${choices}]`
 			);
 		}
 	}

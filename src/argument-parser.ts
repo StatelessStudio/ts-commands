@@ -55,6 +55,7 @@ export class ArgumentParser {
 		const requiredPositionals: CommandOption[] = [];
 
 		for (const positional of this.command.positional) {
+			/* istanbul ignore else */
 			if (positional.default === undefined) {
 				requiredPositionals.push(positional);
 			}

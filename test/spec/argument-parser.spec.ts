@@ -147,6 +147,21 @@ describe('ArgumentParser', () => {
 		);
 	});
 
+	it('allows optional positional options', () => {
+		command.positional = [
+			{ key: 'filename' },
+			{ key: 'optional', default: 'default.txt' },
+		];
+		command.init();
+
+		const result = parser.parse(['input.txt']);
+
+		expect(result).toEqual({
+			filename: 'input.txt',
+			optional: 'default.txt',
+		});
+	});
+
 	it('throws an error for invalid option value', () => {
 		const args = ['--verbose=invalid.txt', 'input.txt'];
 		expect(() => parser.parse(args)).toThrowError(

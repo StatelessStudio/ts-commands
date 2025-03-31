@@ -1,17 +1,18 @@
 import { MockConsole } from 'ts-jasmine-spies';
 import { MockCommand } from '../mock/mock-command';
 import { CommandHelp } from '../../src/command-help';
+import { CommandOption, OptionType } from '../../src/command-options';
 
 class HelpTestCommand extends MockCommand {
 	override key = 'test';
 	override description = 'Test command description';
 
-	override positional = [
+	override positional: CommandOption[] = [
 		{ key: 'arg1', description: 'First argument' },
 		{ key: 'arg2', description: 'Second argument' },
 	];
 
-	override options = [
+	override options: CommandOption[] = [
 		{ key: 'opt1', description: 'First option', alias: 'o' },
 		{ key: 'opt2', description: 'Second option', alias: undefined },
 	];
@@ -53,7 +54,85 @@ describe('CommandHelp', () => {
 	it('can show optional arguments', () => {
 		commandHelp.showOptions();
 		mockConsole.expectStdout(
-			'  --opt1 -o: First option\n  --opt2: Second option\n'
+			'  -o, --opt1: First option\n  --opt2: Second option\n'
+		);
+	});
+
+	it('shows option default value', () => {
+		mockCommand.options = [
+			{
+				key: 'opt1',
+				description: 'First option',
+				default: 'defaultValue',
+			},
+		];
+
+		commandHelp.showOptions();
+		mockConsole.expectStdout(
+			'  --opt1: First option (default: defaultValue)\n'
+		);
+	});
+
+	it('can show option without description', () => {
+		mockCommand.options = [{ key: 'opt1', default: 'defaultValue' }];
+		commandHelp.showOptions();
+		mockConsole.expectStdout('  --opt1:  (default: defaultValue)\n');
+	});
+
+	it('shows option choices', () => {
+		mockCommand.options = [
+			{
+				key: 'opt1',
+				description: 'First option',
+				choices: ['choice1', 'choice2'],
+			},
+		];
+
+		commandHelp.showOptions();
+		mockConsole.expectStdout(
+			'  --opt1: First option [choices: choice1, choice2]\n'
+		);
+	});
+
+	it('shows option type', () => {
+		mockCommand.options = [
+			{
+				key: 'opt1',
+				description: 'First option',
+				type: OptionType.number,
+			},
+		];
+
+		commandHelp.showOptions();
+		mockConsole.expectStdout('  --opt1: First option {number}\n');
+	});
+
+	it('shows skips option type for strings', () => {
+		mockCommand.options = [
+			{
+				key: 'opt1',
+				description: 'First option',
+			},
+		];
+
+		commandHelp.showOptions();
+		mockConsole.expectStdout('  --opt1: First option\n');
+	});
+
+	it('shows default value and choices', () => {
+		mockCommand.options = [
+			{
+				key: 'opt1',
+				description: 'First option',
+				default: 'defaultValue',
+				choices: ['choice1', 'choice2'],
+				type: OptionType.string,
+			},
+		];
+		commandHelp.showOptions();
+		mockConsole.expectStdout(
+			'  --opt1: First option (default: defaultValue)' +
+				' [choices: choice1, choice2]\n'
 		);
 	});
 

@@ -1,9 +1,9 @@
 import { ArgumentValue } from './argument-parser';
 
 export enum OptionType {
-	boolean,
-	number,
-	string,
+	boolean = 'bool',
+	number = 'number',
+	string = 'string',
 }
 
 export interface CommandOption {

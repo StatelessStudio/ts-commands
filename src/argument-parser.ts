@@ -180,6 +180,14 @@ export class ArgumentParser {
 				`Invalid value for argument: ${option.key} ${displayValue}`
 			);
 		}
+
+		if (!this.validateChoices(option, value)) {
+			const choices = option.choices.join(', ');
+
+			throw new ArgumentError(
+				`Invalid choice for argument: ${option.key} (${value}). Allowed choices are [${choices}]`
+			);
+		}
 	}
 
 	protected isValid(option: CommandOption, value: ArgumentValue): boolean {
@@ -198,5 +206,16 @@ export class ArgumentParser {
 				value === undefined
 			);
 		}
+	}
+
+	protected validateChoices(
+		option: CommandOption,
+		value: ArgumentValue
+	): boolean {
+		if (option.choices) {
+			return (<string[]>option.choices).includes(<string>value);
+		}
+
+		return true;
 	}
 }

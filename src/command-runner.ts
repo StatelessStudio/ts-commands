@@ -42,6 +42,7 @@ export class CommandRunner {
 	protected async handle(
 		parsedArgs: ParsedArguments
 	): Promise<undefined | number> {
+		this.command.init();
 		return <undefined | number>await this.command.handle(parsedArgs);
 	}
 }

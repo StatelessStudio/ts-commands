@@ -52,9 +52,21 @@ export class ArgumentParser {
 			matches[option.key] = outputValue;
 		}
 
-		if (this.positionalIndex < this.command.positional.length) {
+		const requiredPositionals: CommandOption[] = [];
+
+		for (const positional of this.command.positional) {
+			/* istanbul ignore else */
+			if (positional.default === undefined) {
+				requiredPositionals.push(positional);
+			}
+			else if (matches[positional.key] === undefined) {
+				matches[positional.key] = positional.default;
+			}
+		}
+
+		if (this.positionalIndex < requiredPositionals.length) {
 			throw new ArgumentError(
-				`Missing positional arguments: ${this.command.positional
+				`Missing positional arguments: ${requiredPositionals
 					.slice(this.positionalIndex)
 					.map((o) => o.key)
 					.join(', ')}`

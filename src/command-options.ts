@@ -1,9 +1,9 @@
 import { ArgumentValue } from './argument-parser';
 
 export enum OptionType {
-	boolean,
-	number,
-	string,
+	boolean = 'bool',
+	number = 'number',
+	string = 'string',
 }
 
 export interface CommandOption {
@@ -14,3 +14,8 @@ export interface CommandOption {
 	default?: ArgumentValue;
 	choices?: number[] | string[];
 }
+
+export const defaultCommandOptions: Partial<CommandOption> = {
+	type: OptionType.string,
+	description: '',
+};

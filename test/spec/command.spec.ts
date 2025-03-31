@@ -1,6 +1,7 @@
 import 'jasmine';
 import { MockConsole } from 'ts-jasmine-spies';
 import { MockCommand } from '../mock/mock-command';
+import { CommandOption, OptionType } from '../../src/command-options';
 
 describe('Command', () => {
 	let mockConsole: MockConsole;
@@ -15,6 +16,26 @@ describe('Command', () => {
 		expect(command.description).toEqual('Mock command');
 		expect(command.positional).toEqual([]);
 		expect(command.options).toEqual([]);
+	});
+
+	it('should init positional and options with default values', () => {
+		const command = new MockCommand();
+		command.positional = [{ key: 'arg1' }];
+		command.options = [{ key: 'opt1' }];
+
+		command.init();
+
+		expect(command.positional[0]).toEqual(<CommandOption>{
+			key: 'arg1',
+			type: OptionType.string,
+			description: '',
+		});
+
+		expect(command.options[0]).toEqual(<CommandOption>{
+			key: 'opt1',
+			type: OptionType.string,
+			description: '',
+		});
 	});
 
 	it('should log help information', () => {

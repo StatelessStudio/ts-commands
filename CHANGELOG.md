@@ -1,5 +1,10 @@
 # ts-commands - Changelog
 
+## [UNRELEASED]
+
+### Additions
+- [Issue #28] Add support for stdin (readline)
+
 ## [1.1.0]
 
 ### Additions

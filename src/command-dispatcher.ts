@@ -1,23 +1,42 @@
+import * as readline from 'node:readline/promises';
+import { stdin, stdout } from 'node:process';
+
 import { Command } from './command';
 import { CommandRunner } from './command-runner';
+import { DependencyContainer } from 'hidi';
 
 export class CommandDispatcher {
 	public commands: Command[] = [];
+	public container: DependencyContainer = new DependencyContainer();
 
 	constructor(options: { commands: (typeof Command)[] }) {
-		this.commands = options.commands.map(
-			(command) => new (command as { new (): Command })()
+		this.container.register(
+			'readline',
+			readline.createInterface(stdin, stdout)
 		);
+
+		this.commands = options.commands.map((command) => {
+			const cmd = new (command as { new (): Command })();
+			cmd.inject(this.container);
+
+			return cmd;
+		});
 	}
 
 	public run(): void {
+		let exitCode = 0;
+
 		this.dispatch()
 			.then(() => {
-				process.exit(0);
+				exitCode = 0;
 			})
 			.catch((error) => {
 				console.error('Error running command:', error);
-				process.exit(1);
+				exitCode = 1;
+			})
+			.finally(() => {
+				this.teardown();
+				process.exit(exitCode);
 			});
 	}
 
@@ -54,5 +73,10 @@ export class CommandDispatcher {
 
 	protected getCommandByKey(key: string): Command | undefined {
 		return this.commands.find((command) => command.key === key);
+	}
+
+	protected teardown() {
+		this.commands.forEach((command) => command.teardown());
+		this.container.get<readline.Interface>('readline')?.close();
 	}
 }

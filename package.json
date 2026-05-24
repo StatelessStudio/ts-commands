@@ -10,7 +10,7 @@
 	},
 	"scripts": {
 		"build": "tsc",
-		"start": "ts-node examples/index",
+		"start": "ts-node examples/dispatched/index.ts",
 		"test": "npm run lint && npm run build && nyc npm run test:run",
 		"test:run": "jasmine --config=jasmine.json",
 		"test:dev": "ts-node node_modules/jasmine/bin/jasmine --config=jasmine.dev.json",
@@ -20,6 +20,9 @@
 		"lint:prod": "npm run lint -- --config=.eslintrc.prod.json",
 		"script": "ts-node scripts",
 		"publish": "npm run script -- publish"
+	},
+	"dependencies": {
+		"hidi": "^2.2.0"
 	},
 	"devDependencies": {
 		"@istanbuljs/nyc-config-typescript": "^1.0.2",

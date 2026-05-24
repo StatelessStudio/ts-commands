@@ -104,6 +104,22 @@ new CommandDispatcher({
 }).run();
 ```
 
+## Prompting the User
+
+You can use the `this.ask()` method to prompt the user for input and await their response:
+
+```typescript
+export class AskCommand extends Command {
+	override key = 'ask';
+	override description = 'ask a question and get an answer';
+
+	override async handle(args: ParsedArguments) {
+		const answer = await this.ask('What is your name? ');
+		console.log(`Your name is ${answer}`);
+	}
+}
+```
+
 ## Create Additional Commands
    1. Repeat "Creating Commands" section for each command
    2. Add each command in the `commands` of `CommandDispatcher`

@@ -110,7 +110,7 @@ export class LoadingIndicator {
 		const frame = this.options.frames[
 			this.frameIndex % this.options.frames.length
 		];
-		process.stdout.write(message + frame + ' ');
+		process.stdout.write(frame + ' ' + message);
 	}
 
 	private writeMessage(): void {

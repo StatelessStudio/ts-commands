@@ -51,10 +51,10 @@ describe('LoadingIndicator', () => {
 		jasmine.clock().tick(300);
 
 		expect(write.calls.allArgs()).toEqual([
-			['Loading... | '],
-			['Loading... / '],
-			['Loading... - '],
-			['Loading... \\ '],
+			['| Loading... '],
+			['/ Loading... '],
+			['- Loading... '],
+			['\\ Loading... '],
 		]);
 		expect(cursorTo.calls.allArgs()).toEqual([[0], [0], [0], [0]]);
 		expect(clearLine.calls.allArgs()).toEqual([[0], [0], [0], [0]]);
@@ -67,9 +67,9 @@ describe('LoadingIndicator', () => {
 		jasmine.clock().tick(100);
 
 		expect(write.calls.allArgs()).toEqual([
-			['Loading... | '],
-			['Processing... | '],
-			['Processing... / '],
+			['| Loading... '],
+			['| Processing... '],
+			['/ Processing... '],
 		]);
 		expect(cursorTo).toHaveBeenCalledTimes(3);
 		expect(clearLine).toHaveBeenCalledTimes(3);
@@ -83,7 +83,7 @@ describe('LoadingIndicator', () => {
 
 		expect(cursorTo.calls.allArgs()).toEqual([[0], [0]]);
 		expect(clearLine.calls.allArgs()).toEqual([[0], [0]]);
-		expect(write).toHaveBeenCalledOnceWith('Loading... | ');
+		expect(write).toHaveBeenCalledOnceWith('| Loading... ');
 		expect(moveCursor).not.toHaveBeenCalled();
 	});
 
@@ -92,7 +92,7 @@ describe('LoadingIndicator', () => {
 		loadingIndicator.stop(false);
 		jasmine.clock().tick(500);
 
-		expect(write.calls.allArgs()).toEqual([['Loading... | '], ['\n']]);
+		expect(write.calls.allArgs()).toEqual([['| Loading... '], ['\n']]);
 		expect(clearLine).toHaveBeenCalledTimes(1);
 	});
 
@@ -120,8 +120,8 @@ describe('LoadingIndicator', () => {
 		loadingIndicator.stop();
 		loadingIndicator.start('Second');
 
-		expect(write).toHaveBeenCalledWith('First / ');
-		expect(write.calls.mostRecent().args).toEqual(['Second | ']);
+		expect(write).toHaveBeenCalledWith('/ First ');
+		expect(write.calls.mostRecent().args).toEqual(['| Second ']);
 	});
 
 	it('should not start twice while already running', () => {
@@ -130,7 +130,7 @@ describe('LoadingIndicator', () => {
 		jasmine.clock().tick(100);
 
 		expect(write.calls.allArgs()).toEqual([
-			['Loading... | '], ['Loading... / '],
+			['| Loading... '], ['/ Loading... '],
 		]);
 	});
 
@@ -213,7 +213,7 @@ describe('LoadingIndicator', () => {
 
 		expect(result).toBe('Result');
 		expect(operation).toHaveBeenCalledTimes(1);
-		expect(write).toHaveBeenCalledOnceWith('Loading... | ');
+		expect(write).toHaveBeenCalledOnceWith('| Loading... ');
 		expect(clearLine).toHaveBeenCalledTimes(2);
 	});
 
@@ -228,7 +228,7 @@ describe('LoadingIndicator', () => {
 		).toBeRejectedWith(error);
 		jasmine.clock().tick(500);
 
-		expect(write).toHaveBeenCalledOnceWith('Loading... | ');
+		expect(write).toHaveBeenCalledOnceWith('| Loading... ');
 		expect(clearLine).toHaveBeenCalledTimes(2);
 	});
 

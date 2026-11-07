@@ -8,6 +8,7 @@ import { HasDependencies } from 'hidi/has-dependencies';
 export abstract class Command implements HasDependencies {
 	public key: string;
 	public description?: string;
+	public alias?: string;
 
 	public positional: CommandOption[] = [];
 	public options: CommandOption[] = [];

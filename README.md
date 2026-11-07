@@ -120,6 +120,27 @@ export class AskCommand extends Command {
 }
 ```
 
+## Loading Indicator
+
+Use `LoadingIndicator` from `ts-commands/loading-indicator` to show a spinner
+while an asynchronous operation runs:
+
+```typescript
+import { LoadingIndicator } from 'ts-commands/loading-indicator';
+
+const indicator = new LoadingIndicator();
+await indicator.runWithIndicator(
+	async () => {
+		await new Promise(resolve => setTimeout(resolve, 1000));
+	},
+	'Loading...'
+);
+```
+
+The spinner redraws on the current terminal line and stops automatically on success or failure. Redirected (non-TTY) output prints messages on separate lines without animation. `updateMessage()` changes the message for subsequent frames.
+
+Set `clearOnStop: false` to keep the final frame followed by a newline, or pass an explicit boolean to `stop()` to override that option.
+
 ## Create Additional Commands
    1. Repeat "Creating Commands" section for each command
    2. Add each command in the `commands` of `CommandDispatcher`

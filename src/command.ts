@@ -4,6 +4,7 @@ import { ParsedArguments } from './argument-parser';
 import { CommandHelp } from './command-help';
 import { CommandOption, defaultCommandOptions } from './command-options';
 import { HasDependencies } from 'hidi/has-dependencies';
+import { UserConfig, configureUserConfig } from './user-config';
 
 export abstract class Command implements HasDependencies {
 	public key: string;
@@ -16,6 +17,29 @@ export abstract class Command implements HasDependencies {
 	public commandHelp = new CommandHelp(this);
 
 	protected rl!: readline.Interface;
+	
+	/**
+	 * User configuration instance
+	 * Override this in your config class to provide typed configuration
+	 */
+	protected userConfig?: UserConfig;
+
+	/**
+	 * Get user configuration instance
+	 * This will be lazily initialized on first access
+	 */
+	protected get config(): UserConfig | undefined {
+		if (this.userConfig === undefined) {
+			// Override this method in your command subclass
+			// to provide your custom UserConfig class
+			// Example:
+			// if (this.userConfig === undefined) {
+			//   this.userConfig = configureUserConfig(MyAppConfig);
+			// }
+			this.userConfig = undefined;
+		}
+		return this.userConfig;
+	}
 
 	public inject(container: DependencyContainer) {
 		this.rl = container.require('readline');

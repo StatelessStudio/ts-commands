@@ -22,7 +22,8 @@
 		"publish": "npm run script -- publish"
 	},
 	"dependencies": {
-		"hidi": "^2.2.0"
+		"hidi": "^2.2.0",
+		"ts-appconfig": "^1.2.0"
 	},
 	"devDependencies": {
 		"@istanbuljs/nyc-config-typescript": "^1.0.2",

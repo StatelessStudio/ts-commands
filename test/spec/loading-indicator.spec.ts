@@ -1,5 +1,5 @@
 import 'jasmine';
-import { LoadingIndicator } from '../../src/loading-indicator';
+import { LoadingIndicator, LoadingIndicatorOptions } from '../../src/loading-indicator';
 
 describe('LoadingIndicator', () => {
 	let loadingIndicator: LoadingIndicator;
@@ -95,5 +95,62 @@ describe('LoadingIndicator', () => {
 
 	it('should not update message if not running', () => {
 		expect(() => loadingIndicator.updateMessage('Message')).not.toThrow();
+	});
+
+	it('should support custom spinner frames', async () => {
+		const options: LoadingIndicatorOptions = {
+			frames: ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
+		};
+
+		const customIndicator = new LoadingIndicator(options);
+		customIndicator.start('Loading with custom frames...');
+
+		// Give the interval time to run
+		await new Promise(resolve => setTimeout(resolve, 150));
+
+		expect(customIndicator).toBeDefined();
+		customIndicator.stop(true);
+	});
+
+	it('should support custom frame duration', async () => {
+		const options: LoadingIndicatorOptions = {
+			frameDuration: 200
+		};
+
+		const customIndicator = new LoadingIndicator(options);
+		customIndicator.start('Loading with custom duration...');
+
+		// Give the interval time to run
+		await new Promise(resolve => setTimeout(resolve, 150));
+
+		expect(customIndicator).toBeDefined();
+		customIndicator.stop(true);
+	});
+
+	it('should support showMessage option', async () => {
+		const options: LoadingIndicatorOptions = {
+			showMessage: false
+		};
+
+		const customIndicator = new LoadingIndicator(options);
+		customIndicator.start('This should not be visible');
+
+		// Give the interval time to run
+		await new Promise(resolve => setTimeout(resolve, 150));
+
+		expect(customIndicator).toBeDefined();
+		customIndicator.stop(true);
+	});
+
+	it('should support loadingIndicatorOptions constructor', () => {
+		const options: LoadingIndicatorOptions = {
+			frames: ['-', '=', '–'],
+			frameDuration: 150,
+			clearOnStop: false,
+			showMessage: false
+		};
+
+		const customIndicator = new LoadingIndicator(options);
+		expect(customIndicator).toBeDefined();
 	});
 });

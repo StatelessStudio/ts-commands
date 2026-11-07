@@ -1,8 +1,16 @@
 // Simple loading indicator for CLI commands
 // Uses a spinner animation to indicate processing
 
-const frames = ['|', '/', '-', '\\'];
-const FRAME_DURATION = 100; // ms
+export interface LoadingIndicatorOptions {
+	/** Spinner frames to cycle through */
+	frames?: string[];
+	/** Duration between frame changes in milliseconds */
+	frameDuration?: number;
+	/** Whether to clear the line when stopping */
+	clearOnStop?: boolean;
+	/** Whether to show the message with the spinner */
+	showMessage?: boolean;
+}
 
 export class LoadingIndicator {
 	private isRunning = false;
@@ -10,6 +18,17 @@ export class LoadingIndicator {
 	private intervalId?: NodeJS.Timeout;
 	private message?: string;
 	private cursorLine?: number;
+	private readonly options: LoadingIndicatorOptions;
+
+	constructor(options: LoadingIndicatorOptions = {}) {
+		this.options = {
+			frames: ['|', '/', '-', '\\'],
+			frameDuration: 100,
+			clearOnStop: true,
+			showMessage: true,
+			...options,
+		};
+	}
 
 	public start(message?: string): void {
 		if (this.isRunning) {
@@ -31,10 +50,10 @@ export class LoadingIndicator {
 		}
 
 		// Write initial message
-		if (message) {
+		if (message && this.options.showMessage) {
 			process.stdout.write(message + ' ');
 		}
-		process.stdout.write(frames[0]);
+		process.stdout.write(this.options.frames[0]);
 		process.stdout.write(' ');
 
 		// Start the spinner interval
@@ -50,15 +69,16 @@ export class LoadingIndicator {
 				process.stdout.clearLine(0);
 			}
 
+			const frames = this.options.frames;
 			const frame = frames[this.frameIndex % frames.length];
-			if (message) {
+			if (message && this.options.showMessage) {
 				process.stdout.write(message + ' ');
 			}
 			process.stdout.write(frame);
 			process.stdout.write(' ');
 
 			this.frameIndex++;
-		}, FRAME_DURATION);
+		}, this.options.frameDuration);
 
 		// Track cursor position for later cleanup
 		this.cursorLine = 1;
@@ -109,6 +129,7 @@ export class LoadingIndicator {
 		if (process.stdout.write) {
 			process.stdout.write(message);
 			process.stdout.write(' ');
+			const frames = this.options.frames;
 			const frame = frames[this.frameIndex % frames.length];
 			process.stdout.write(frame);
 			process.stdout.write(' ');

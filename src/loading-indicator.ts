@@ -17,8 +17,8 @@ export class LoadingIndicator {
 	private frameIndex = 0;
 	private intervalId?: NodeJS.Timeout;
 	private message?: string;
-	private cursorLine?: number;
-	private readonly options: LoadingIndicatorOptions;
+	private isInteractive = false;
+	private readonly options: Required<LoadingIndicatorOptions>;
 
 	constructor(options: LoadingIndicatorOptions = {}) {
 		this.options = {
@@ -38,53 +38,30 @@ export class LoadingIndicator {
 		this.isRunning = true;
 		this.message = message;
 		this.frameIndex = 0;
+		this.isInteractive = Boolean(
+			process.stdout.isTTY &&
+			process.stdout.cursorTo &&
+			process.stdout.clearLine
+		);
 
-		// Clear any previous output on the same line
-		if (this.cursorLine !== undefined) {
-			if (process.stdout.moveCursor) {
-				process.stdout.moveCursor(0, -this.cursorLine);
-			}
-			if (process.stdout.clearLine) {
-				process.stdout.clearLine(0);
-			}
+		if (!this.isInteractive) {
+			this.writeMessage();
+			return;
 		}
 
-		// Write initial message
-		if (message && this.options.showMessage) {
-			process.stdout.write(message + ' ');
-		}
-		process.stdout.write(this.options.frames[0]);
-		process.stdout.write(' ');
+		this.render();
 
-		// Start the spinner interval
 		this.intervalId = setInterval(() => {
 			if (!this.isRunning) {
 				return;
 			}
 
-			if (process.stdout.moveCursor) {
-				process.stdout.moveCursor(0, -1);
-			}
-			if (process.stdout.clearLine) {
-				process.stdout.clearLine(0);
-			}
-
-			const frames = this.options.frames;
-			const frame = frames[this.frameIndex % frames.length];
-			if (message && this.options.showMessage) {
-				process.stdout.write(message + ' ');
-			}
-			process.stdout.write(frame);
-			process.stdout.write(' ');
-
 			this.frameIndex++;
+			this.render();
 		}, this.options.frameDuration);
-
-		// Track cursor position for later cleanup
-		this.cursorLine = 1;
 	}
 
-	public stop(clear: boolean = true): void {
+	public stop(clear: boolean = this.options.clearOnStop): void {
 		if (!this.isRunning) {
 			return;
 		}
@@ -96,22 +73,17 @@ export class LoadingIndicator {
 			this.intervalId = undefined;
 		}
 
-		// Clean up the spinner
-		if (clear && this.cursorLine !== undefined) {
-			if (process.stdout.moveCursor) {
-				process.stdout.moveCursor(0, -this.cursorLine);
-			}
-			if (process.stdout.clearLine) {
-				process.stdout.clearLine(0);
-			}
-		} else if (!clear) {
-			// Move to next line to keep the output
-			if (process.stdout.write) {
-				process.stdout.write('\n');
-			}
+		if (!this.isInteractive) {
+			return;
 		}
 
-		this.cursorLine = undefined;
+		if (clear) {
+			process.stdout.cursorTo(0);
+			process.stdout.clearLine(0);
+		}
+		else {
+			process.stdout.write('\n');
+		}
 	}
 
 	public updateMessage(message: string): void {
@@ -119,20 +91,31 @@ export class LoadingIndicator {
 			return;
 		}
 
-		if (process.stdout.moveCursor) {
-			process.stdout.moveCursor(0, -1);
-		}
-		if (process.stdout.clearLine) {
-			process.stdout.clearLine(0);
-		}
+		this.message = message;
 
-		if (process.stdout.write) {
-			process.stdout.write(message);
-			process.stdout.write(' ');
-			const frames = this.options.frames;
-			const frame = frames[this.frameIndex % frames.length];
-			process.stdout.write(frame);
-			process.stdout.write(' ');
+		if (this.isInteractive) {
+			this.render();
+		}
+		else {
+			this.writeMessage();
+		}
+	}
+
+	private render(): void {
+		process.stdout.cursorTo(0);
+		process.stdout.clearLine(0);
+		const message = this.message && this.options.showMessage
+			? this.message + ' '
+			: '';
+		const frame = this.options.frames[
+			this.frameIndex % this.options.frames.length
+		];
+		process.stdout.write(message + frame + ' ');
+	}
+
+	private writeMessage(): void {
+		if (this.message && this.options.showMessage) {
+			process.stdout.write(this.message + '\n');
 		}
 	}
 
@@ -142,12 +125,10 @@ export class LoadingIndicator {
 	): Promise<T> {
 		this.start(message);
 		try {
-			const result = await operation();
-			this.stop(true);
-			return result;
-		} catch (error) {
-			this.stop(true);
-			throw error;
+			return await operation();
+		}
+		finally {
+			this.stop();
 		}
 	}
 }

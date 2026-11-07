@@ -1,156 +1,242 @@
 import 'jasmine';
-import { LoadingIndicator, LoadingIndicatorOptions } from '../../src/loading-indicator';
+import { LoadingIndicator } from '../../src/loading-indicator';
 
 describe('LoadingIndicator', () => {
 	let loadingIndicator: LoadingIndicator;
+	let write: jasmine.Spy;
+	let cursorTo: jasmine.Spy;
+	let clearLine: jasmine.Spy;
+	let moveCursor: jasmine.Spy;
+	const properties = [
+		'isTTY', 'cursorTo', 'clearLine', 'moveCursor',
+	] as const;
+	let descriptors: (PropertyDescriptor | undefined)[];
 
 	beforeEach(() => {
+		descriptors = properties.map(property =>
+			Object.getOwnPropertyDescriptor(process.stdout, property)
+		);
+		cursorTo = jasmine.createSpy('cursorTo');
+		clearLine = jasmine.createSpy('clearLine');
+		moveCursor = jasmine.createSpy('moveCursor');
+		Object.defineProperties(process.stdout, {
+			isTTY: { configurable: true, value: true },
+			cursorTo: { configurable: true, value: cursorTo },
+			clearLine: { configurable: true, value: clearLine },
+			moveCursor: { configurable: true, value: moveCursor },
+		});
+		write = spyOn(process.stdout, 'write').and.returnValue(true);
+		jasmine.clock().install();
 		loadingIndicator = new LoadingIndicator();
 	});
 
 	afterEach(() => {
 		loadingIndicator.stop(true);
+		jasmine.clock().uninstall();
+		properties.forEach((property, index) => {
+			const descriptor = descriptors[index];
+			if (descriptor) {
+				Object.defineProperty(process.stdout, property, descriptor);
+			}
+			else {
+				Reflect.deleteProperty(process.stdout, property);
+			}
+		});
 	});
 
-	it('should start spinner with message', async () => {
+	it('should redraw frames at column zero on the current row', () => {
 		loadingIndicator.start('Loading...');
+		expect(cursorTo).toHaveBeenCalledBefore(clearLine);
+		expect(clearLine).toHaveBeenCalledBefore(write);
+		jasmine.clock().tick(300);
 
-		// Give the interval time to run
-		await new Promise(resolve => setTimeout(resolve, 150));
-
-		// Just verify that the interval ran without throwing errors
-		expect(true).toBe(true);
+		expect(write.calls.allArgs()).toEqual([
+			['Loading... | '],
+			['Loading... / '],
+			['Loading... - '],
+			['Loading... \\ '],
+		]);
+		expect(cursorTo.calls.allArgs()).toEqual([[0], [0], [0], [0]]);
+		expect(clearLine.calls.allArgs()).toEqual([[0], [0], [0], [0]]);
+		expect(moveCursor).not.toHaveBeenCalled();
 	});
 
-	it('should update message while running', async () => {
+	it('should retain updated messages on subsequent frames', () => {
 		loadingIndicator.start('Loading...');
-
-		// Give the interval time to run
-		await new Promise(resolve => setTimeout(resolve, 150));
-
 		loadingIndicator.updateMessage('Processing...');
+		jasmine.clock().tick(100);
 
-		// Just verify that the update ran without throwing errors
-		expect(true).toBe(true);
+		expect(write.calls.allArgs()).toEqual([
+			['Loading... | '],
+			['Processing... | '],
+			['Processing... / '],
+		]);
+		expect(cursorTo).toHaveBeenCalledTimes(3);
+		expect(clearLine).toHaveBeenCalledTimes(3);
+		expect(moveCursor).not.toHaveBeenCalled();
 	});
 
-	it('should stop spinner and clear output', async () => {
+	it('should clear the current row and cancel animation when stopped', () => {
 		loadingIndicator.start('Loading...');
-		await new Promise(resolve => setTimeout(resolve, 150));
+		loadingIndicator.stop();
+		jasmine.clock().tick(500);
 
+		expect(cursorTo.calls.allArgs()).toEqual([[0], [0]]);
+		expect(clearLine.calls.allArgs()).toEqual([[0], [0]]);
+		expect(write).toHaveBeenCalledOnceWith('Loading... | ');
+		expect(moveCursor).not.toHaveBeenCalled();
+	});
+
+	it('should finish with a newline when keeping output', () => {
+		loadingIndicator.start('Loading...');
+		loadingIndicator.stop(false);
+		jasmine.clock().tick(500);
+
+		expect(write.calls.allArgs()).toEqual([['Loading... | '], ['\n']]);
+		expect(clearLine).toHaveBeenCalledTimes(1);
+	});
+
+	it('should respect clearOnStop by default', () => {
+		loadingIndicator = new LoadingIndicator({ clearOnStop: false });
+		loadingIndicator.start('Loading...');
+		loadingIndicator.stop();
+
+		expect(write).toHaveBeenCalledWith('\n');
+		expect(clearLine).toHaveBeenCalledTimes(1);
+	});
+
+	it('should allow an explicit stop argument to override clearOnStop', () => {
+		loadingIndicator = new LoadingIndicator({ clearOnStop: false });
+		loadingIndicator.start('Loading...');
 		loadingIndicator.stop(true);
 
-		// Should stop the interval without errors
-		expect(true).toBe(true);
+		expect(write).not.toHaveBeenCalledWith('\n');
+		expect(clearLine).toHaveBeenCalledTimes(2);
 	});
 
-	it('should stop spinner and keep output', async () => {
-		loadingIndicator.start('Loading...');
-		await new Promise(resolve => setTimeout(resolve, 150));
+	it('should restart at the first frame after stopping', () => {
+		loadingIndicator.start('First');
+		jasmine.clock().tick(100);
+		loadingIndicator.stop();
+		loadingIndicator.start('Second');
 
+		expect(write).toHaveBeenCalledWith('First / ');
+		expect(write.calls.mostRecent().args).toEqual(['Second | ']);
+	});
+
+	it('should not start twice while already running', () => {
+		loadingIndicator.start('Loading...');
+		loadingIndicator.start('Another message...');
+		jasmine.clock().tick(100);
+
+		expect(write.calls.allArgs()).toEqual([
+			['Loading... | '], ['Loading... / '],
+		]);
+	});
+
+	it('should not update or clear output when not running', () => {
+		loadingIndicator.updateMessage('Message');
+		loadingIndicator.stop();
+
+		expect(write).not.toHaveBeenCalled();
+		expect(cursorTo).not.toHaveBeenCalled();
+		expect(clearLine).not.toHaveBeenCalled();
+	});
+
+	it('should cycle custom frames at the configured duration', () => {
+		loadingIndicator = new LoadingIndicator({
+			frames: ['a', 'b'],
+			frameDuration: 200,
+		});
+		loadingIndicator.start();
+		jasmine.clock().tick(199);
+		expect(write).toHaveBeenCalledOnceWith('a ');
+		jasmine.clock().tick(201);
+		expect(write.calls.allArgs()).toEqual([['a '], ['b '], ['a ']]);
+	});
+
+	it('should hide messages when showMessage is false', () => {
+		loadingIndicator = new LoadingIndicator({ showMessage: false });
+		loadingIndicator.start('Hidden');
+		loadingIndicator.updateMessage('Also hidden');
+		jasmine.clock().tick(100);
+
+		expect(write.calls.allArgs()).toEqual([['| '], ['| '], ['/ ']]);
+	});
+
+	it('should print plain messages for non-TTY output', () => {
+		Object.defineProperty(process.stdout, 'isTTY', { value: false });
+		loadingIndicator.start('Loading...');
+		jasmine.clock().tick(500);
+		loadingIndicator.updateMessage('Processing...');
 		loadingIndicator.stop(false);
 
-		// Should add newline without errors
-		expect(true).toBe(true);
+		expect(write.calls.allArgs()).toEqual([
+			['Loading...\n'], ['Processing...\n'],
+		]);
+		expect(cursorTo).not.toHaveBeenCalled();
+		expect(clearLine).not.toHaveBeenCalled();
+		expect(moveCursor).not.toHaveBeenCalled();
 	});
 
-	it('should run operation with indicator', async () => {
-		let operationCalled = false;
-		const operation = async () => {
-			operationCalled = true;
-			return 'Result';
-		};
+	it('should hide messages for non-TTY output', () => {
+		Object.defineProperty(process.stdout, 'isTTY', { value: false });
+		loadingIndicator = new LoadingIndicator({ showMessage: false });
+		loadingIndicator.start('Hidden');
+		loadingIndicator.updateMessage('Also hidden');
+		jasmine.clock().tick(500);
+		loadingIndicator.stop();
 
-		const result = await loadingIndicator.runWithIndicator(operation, 'Loading...');
+		expect(write).not.toHaveBeenCalled();
+	});
+
+	it('should use plain output when cursor controls are unavailable', () => {
+		Object.defineProperty(process.stdout, 'cursorTo', {
+			value: undefined,
+		});
+		loadingIndicator.start('Loading...');
+		jasmine.clock().tick(500);
+		loadingIndicator.stop();
+
+		expect(write).toHaveBeenCalledOnceWith('Loading...\n');
+		expect(clearLine).not.toHaveBeenCalled();
+	});
+
+	it('should return operation results and stop the animation', async () => {
+		const operation = jasmine.createSpy('operation')
+			.and.returnValue(Promise.resolve('Result'));
+
+		const result = await loadingIndicator.runWithIndicator(
+			operation, 'Loading...'
+		);
+		jasmine.clock().tick(500);
 
 		expect(result).toBe('Result');
-		expect(operationCalled).toBe(true);
+		expect(operation).toHaveBeenCalledTimes(1);
+		expect(write).toHaveBeenCalledOnceWith('Loading... | ');
+		expect(clearLine).toHaveBeenCalledTimes(2);
 	});
 
-	it('should handle errors in operation', async () => {
-		let operationCalled = false;
+	it('should propagate operation errors and stop the animation', async () => {
+		const error = new Error('Operation failed');
 		const operation = async () => {
-			operationCalled = true;
-			throw new Error('Operation failed');
+			throw error;
 		};
 
-		try {
-			await loadingIndicator.runWithIndicator(operation, 'Loading...');
-			fail('Operation should have thrown an error');
-		} catch (error) {
-			expect((error as Error).message).toBe('Operation failed');
-			expect(operationCalled).toBe(true);
-		}
+		await expectAsync(
+			loadingIndicator.runWithIndicator(operation, 'Loading...')
+		).toBeRejectedWith(error);
+		jasmine.clock().tick(500);
+
+		expect(write).toHaveBeenCalledOnceWith('Loading... | ');
+		expect(clearLine).toHaveBeenCalledTimes(2);
 	});
 
-	it('should not start if already running', async () => {
-		loadingIndicator.start('Loading...');
+	it('should respect clearOnStop when wrapping an operation', async () => {
+		loadingIndicator = new LoadingIndicator({ clearOnStop: false });
+		await loadingIndicator.runWithIndicator(async () => 'Result');
 
-		// Call start again
-		loadingIndicator.start('Another message...');
-
-		// Should not throw errors
-		expect(true).toBe(true);
-	});
-
-	it('should not update message if not running', () => {
-		expect(() => loadingIndicator.updateMessage('Message')).not.toThrow();
-	});
-
-	it('should support custom spinner frames', async () => {
-		const options: LoadingIndicatorOptions = {
-			frames: ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
-		};
-
-		const customIndicator = new LoadingIndicator(options);
-		customIndicator.start('Loading with custom frames...');
-
-		// Give the interval time to run
-		await new Promise(resolve => setTimeout(resolve, 150));
-
-		expect(customIndicator).toBeDefined();
-		customIndicator.stop(true);
-	});
-
-	it('should support custom frame duration', async () => {
-		const options: LoadingIndicatorOptions = {
-			frameDuration: 200
-		};
-
-		const customIndicator = new LoadingIndicator(options);
-		customIndicator.start('Loading with custom duration...');
-
-		// Give the interval time to run
-		await new Promise(resolve => setTimeout(resolve, 150));
-
-		expect(customIndicator).toBeDefined();
-		customIndicator.stop(true);
-	});
-
-	it('should support showMessage option', async () => {
-		const options: LoadingIndicatorOptions = {
-			showMessage: false
-		};
-
-		const customIndicator = new LoadingIndicator(options);
-		customIndicator.start('This should not be visible');
-
-		// Give the interval time to run
-		await new Promise(resolve => setTimeout(resolve, 150));
-
-		expect(customIndicator).toBeDefined();
-		customIndicator.stop(true);
-	});
-
-	it('should support loadingIndicatorOptions constructor', () => {
-		const options: LoadingIndicatorOptions = {
-			frames: ['-', '=', '–'],
-			frameDuration: 150,
-			clearOnStop: false,
-			showMessage: false
-		};
-
-		const customIndicator = new LoadingIndicator(options);
-		expect(customIndicator).toBeDefined();
+		expect(write.calls.allArgs()).toEqual([['| '], ['\n']]);
+		expect(clearLine).toHaveBeenCalledTimes(1);
 	});
 });

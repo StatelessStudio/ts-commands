@@ -83,7 +83,7 @@ describe('CommandDispatcher', () => {
 
 		await dispatcher.help();
 
-		mockConsole.expectStdout('Subcommands:\n  mock: Mock command\n');
+		mockConsole.expectStdout('Subcommands:\n  mock (m): Mock command\n');
 	});
 
 	it('exits returning 0 when command is successful', async () => {
@@ -102,6 +102,33 @@ describe('CommandDispatcher', () => {
 
 		expect(dispatchSpy).toHaveBeenCalled();
 		mockExit.expectExit(0);
+	});
+
+	it('should run command with alias', async () => {
+		const dispatcher = new CommandDispatcher({
+			commands: [MockCommand],
+		});
+
+		// Set up process.argv after dispatcher creation
+		process.argv = ['node', 'script.js', 'm'];
+
+		const commandSpy = spyOn(MockCommand.prototype, 'handle').and
+			.returnValue(Promise.resolve());
+
+		await dispatcher.dispatch();
+
+		expect(commandSpy).toHaveBeenCalledWith({});
+		mockExit.expectExit(0);
+	});
+
+	it('should find command by alias using getCommandByKey', async () => {
+		const dispatcher = new CommandDispatcher({
+			commands: [MockCommand],
+		});
+
+		expect(dispatcher.getCommandByKey('mock')).toBeDefined();
+		expect(dispatcher.getCommandByKey('m')).toBeDefined();
+		expect(dispatcher.getCommandByKey('mck')).toBeUndefined();
 	});
 
 	it('exits returning 1 when dispatch throws an error', async () => {

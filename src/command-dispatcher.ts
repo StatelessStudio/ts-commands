@@ -67,12 +67,24 @@ export class CommandDispatcher {
 		console.log('Subcommands:');
 
 		this.commands.forEach((command) => {
-			console.log(`  ${command.key}: ${command.description}`);
+			let displayKey = command.key;
+			if (command.alias) {
+				displayKey += ` (${command.alias})`;
+			}
+			console.log(`  ${displayKey}: ${command.description}`);
 		});
 	}
 
-	protected getCommandByKey(key: string): Command | undefined {
-		return this.commands.find((command) => command.key === key);
+	public getCommandByKey(key: string): Command | undefined {
+		return this.commands.find((command) => {
+			if (command.key === key) {
+				return true;
+			}
+			if (command.alias && command.alias === key) {
+				return true;
+			}
+			return false;
+		});
 	}
 
 	protected teardown() {

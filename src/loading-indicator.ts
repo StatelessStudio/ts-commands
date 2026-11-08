@@ -119,13 +119,28 @@ export class LoadingIndicator {
 		}
 	}
 
+	/**
+	 * Run an operation with a loading indicator.
+	 * @param messageOrOperation Optional message to display, or operation if message is omitted
+	 * @param operation Optional operation to run. If omitted, messageOrOperation is treated as operation.
+	 */
 	public async runWithIndicator<T>(
-		operation: () => Promise<T>,
-		message?: string
+		messageOrOperation?: string | (() => Promise<T>),
+		operation?: () => Promise<T>
 	): Promise<T> {
+		let message: string | undefined;
+		let op: () => Promise<T>;
+
+		if (typeof messageOrOperation === 'function') {
+			op = messageOrOperation;
+		} else {
+			message = messageOrOperation;
+			op = operation!;
+		}
+
 		this.start(message);
 		try {
-			return await operation();
+			return await op();
 		}
 		finally {
 			this.stop();

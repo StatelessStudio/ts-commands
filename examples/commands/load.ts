@@ -22,12 +22,12 @@ export class LoadCommand extends Command {
 		const seconds = args.seconds;
 		const indicator = new LoadingIndicator();
 		await indicator.runWithIndicator(
+			`Loading for ${seconds} seconds...`,
 			async () => {
 				await new Promise(resolve =>
 					setTimeout(resolve, seconds * 1000)
 				);
-			},
-			`Loading for ${seconds} seconds...`
+			}
 		);
 		/* eslint-disable-next-line no-console */
 		console.log(`Done loading for ${seconds} seconds.`);

@@ -130,10 +130,10 @@ import { LoadingIndicator } from 'ts-commands/loading-indicator';
 
 const indicator = new LoadingIndicator();
 await indicator.runWithIndicator(
+	'Loading...',
 	async () => {
 		await new Promise(resolve => setTimeout(resolve, 1000));
-	},
-	'Loading...'
+	}
 );
 ```
 

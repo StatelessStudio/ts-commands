@@ -207,7 +207,7 @@ describe('LoadingIndicator', () => {
 			.and.returnValue(Promise.resolve('Result'));
 
 		const result = await loadingIndicator.runWithIndicator(
-			operation, 'Loading...'
+			'Loading...', operation
 		);
 		jasmine.clock().tick(500);
 
@@ -224,7 +224,7 @@ describe('LoadingIndicator', () => {
 		};
 
 		await expectAsync(
-			loadingIndicator.runWithIndicator(operation, 'Loading...')
+			loadingIndicator.runWithIndicator('Loading...', operation)
 		).toBeRejectedWith(error);
 		jasmine.clock().tick(500);
 
@@ -234,9 +234,9 @@ describe('LoadingIndicator', () => {
 
 	it('should respect clearOnStop when wrapping an operation', async () => {
 		loadingIndicator = new LoadingIndicator({ clearOnStop: false });
-		await loadingIndicator.runWithIndicator(async () => 'Result');
+		await loadingIndicator.runWithIndicator('Loading...', async () => 'Result');
 
-		expect(write.calls.allArgs()).toEqual([['| '], ['\n']]);
+		expect(write.calls.allArgs()).toEqual([['| Loading... '], ['\n']]);
 		expect(clearLine).toHaveBeenCalledTimes(1);
 	});
 });

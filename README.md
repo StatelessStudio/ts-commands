@@ -130,12 +130,14 @@ import { LoadingIndicator } from 'ts-commands/loading-indicator';
 
 const indicator = new LoadingIndicator();
 await indicator.runWithIndicator(
+	'Loading...',
 	async () => {
 		await new Promise(resolve => setTimeout(resolve, 1000));
-	},
-	'Loading...'
+	}
 );
 ```
+
+The message is required and must be provided as the first argument.
 
 The spinner redraws on the current terminal line and stops automatically on success or failure. Redirected (non-TTY) output prints messages on separate lines without animation. `updateMessage()` changes the message for subsequent frames.
 

@@ -119,9 +119,14 @@ export class LoadingIndicator {
 		}
 	}
 
+	/**
+	 * Run an operation with a loading indicator.
+	 * @param message Message to display
+	 * @param operation Operation to run
+	 */
 	public async runWithIndicator<T>(
-		operation: () => Promise<T>,
-		message?: string
+		message: string,
+		operation: () => Promise<T>
 	): Promise<T> {
 		this.start(message);
 		try {

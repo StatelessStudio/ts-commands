@@ -234,7 +234,7 @@ describe('LoadingIndicator', () => {
 
 	it('should respect clearOnStop when wrapping an operation', async () => {
 		loadingIndicator = new LoadingIndicator({ clearOnStop: false });
-		await loadingIndicator.runWithIndicator(undefined, async () => 'Result');
+		await loadingIndicator.runWithIndicator('Loading...', async () => 'Result');
 
 		expect(write.calls.allArgs()).toEqual([['| '], ['\n']]);
 		expect(clearLine).toHaveBeenCalledTimes(1);

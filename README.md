@@ -137,6 +137,8 @@ await indicator.runWithIndicator(
 );
 ```
 
+The message is required and must be provided as the first argument.
+
 The spinner redraws on the current terminal line and stops automatically on success or failure. Redirected (non-TTY) output prints messages on separate lines without animation. `updateMessage()` changes the message for subsequent frames.
 
 Set `clearOnStop: false` to keep the final frame followed by a newline, or pass an explicit boolean to `stop()` to override that option.

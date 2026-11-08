@@ -236,7 +236,7 @@ describe('LoadingIndicator', () => {
 		loadingIndicator = new LoadingIndicator({ clearOnStop: false });
 		await loadingIndicator.runWithIndicator('Loading...', async () => 'Result');
 
-		expect(write.calls.allArgs()).toEqual([['| '], ['\n']]);
+		expect(write.calls.allArgs()).toEqual([['| Loading... '], ['\n']]);
 		expect(clearLine).toHaveBeenCalledTimes(1);
 	});
 });
